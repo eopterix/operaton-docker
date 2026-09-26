@@ -1,4 +1,4 @@
-name: Build Registration Harvester BPM with SSO
+name: Build Regis[18~tration Harvester BPM with SSO
 description: Builds a custom Operaton-BPM distribution with SSO support enabled, for use in downstream Docker image builds.
 
 on:
@@ -124,7 +124,7 @@ jobs:
         id: cache-docker-image
         uses: actions/cache@v5
         with:
-          path: operaton-sso.tar
+          path: operaton-docker.tar
           key: cache-docker-image-${{ github.sha }}-${{ hashFiles('./operaton-bpm/**', './keycloak-plugin/**') }}
       - name: Build docker image
         if: steps.cache-docker-image.outputs.cache-hit != 'true'
@@ -169,5 +169,7 @@ jobs:
           password: ${{ secrets.GHCR_TOKEN }}
       - name: Load Docker Image
         run: docker load -i operaton-docker.tar
+      - name: Tag Image
+        run: docker tag operaton-docker:${{ inputs.operaton-version }} ghcr.io/${{ github.repository_owner }}/operaton-docker:${{ inputs.operaton-version }}
       - name: Push Image to GHCR
         run: docker push ghcr.io/${{ github.repository_owner }}/operaton-docker:${{ inputs.operaton-version }}
