@@ -1,4 +1,4 @@
-name: Build Regis[18~tration Harvester BPM with SSO
+name: Build Registration Harvester BPM with SSO
 description: Builds a custom Operaton-BPM distribution with SSO support enabled, for use in downstream Docker image builds.
 
 on:
