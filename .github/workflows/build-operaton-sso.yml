@@ -96,6 +96,8 @@ jobs:
         uses: actions/checkout@v4
       - name: Checkout original source
         run: curl -L https://github.com/operaton/operaton-docker/archive/refs/heads/main.tar.gz | tar -xz --strip-components=1
+      - name: Add options --oauth2 and --webapps
+        run: sed -i 's|CMD \["\./operaton\.sh"\]|CMD ["./operaton.sh", "--oauth2", "--webapps"]|' Dockerfile
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
