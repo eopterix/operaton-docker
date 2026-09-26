@@ -1,0 +1,173 @@
+name: Build Registration Harvester BPM with SSO
+description: Builds a custom Operaton-BPM distribution with SSO support enabled, for use in downstream Docker image builds.
+
+on:
+  workflow_dispatch:
+    inputs:
+      operaton-version:
+        description: 'Operaton Version'
+        default: '2.1.1'
+        options:
+          - 2.1.1
+          - 2.1.0
+        required: true
+      plugin-version:
+        description: 'Keycloak Plugin Version'
+        default: '2.1.0'
+        options:
+          - 2.1.0
+          - 2.2.0-SNAPSHOT
+        required: true
+
+jobs:
+  build-operaton-bpm:
+    name: Build Operaton BPM Maven Package
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      checks: write
+      actions: write
+    steps:
+      - name: Checkout this repo
+        uses: actions/checkout@v6
+      - name: Checkout original source
+        run: |
+          curl -L https://github.com/operaton/operaton/archive/refs/tags/v${{ inputs.operaton-version }}.tar.gz | tar -xz --strip-components=1
+      - name: Cache output
+        id: cache-operaton-bpm
+        uses: actions/cache@v5
+        with:
+          path: ~/.m2/
+          key: cache-operaton-bpm-${{ hashFiles('distro/**') }}
+      - name: Build maven package
+        if: steps.cache-operaton-bpm.outputs.cache-hit != 'true'
+        env:
+          MAVEN_OPTS: "-Xmx4g -XX:MaxMetaspaceSize=1g"
+        run: |
+          ./mvnw -pl distro/run/distro/ -am -DskipTests install
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: operaton-bpm
+          path: ~/.m2/repository/org/operaton/bpm/run/operaton-bpm-run/${{ inputs.operaton-version }}/
+  build-keycloak-plugin:
+    name: Build Keycloak Plugin Maven Package
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      checks: write
+      actions: write
+    steps:
+      - name: Checkout this repo
+        uses: actions/checkout@v6
+      - name: Checkout original source
+        run: |
+          curl -L https://github.com/operaton/operaton-keycloak/archive/refs/tags/v${{ inputs.plugin-version }}.tar.gz | tar -xz --strip-components=1
+      - name: Customize
+        run: |
+          patch extension-run/pom.xml < extension-run/pom.xml.patch
+      - name: Cache output
+        id: cache-keycloak-plugin
+        uses: actions/cache@v5
+        with:
+          path: ~/.m2/
+          key: cache-keycloak-plugin-${{ hashFiles('extension-run/**') }}
+      - name: Build maven package
+        if: steps.cache-keycloak-plugin.outputs.cache-hit != 'true'
+        env:
+          MAVEN_OPTS: "-Xmx4g -XX:MaxMetaspaceSize=1g"
+        run: |
+          ./mvnw -pl extension-run -DskipTests clean install -am
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: keycloak-plugin
+          path: ~/.m2/repository/org/operaton/bpm/extension/operaton-keycloak-run/${{ inputs.plugin-version }}/
+  build-docker:
+    name: Build Docker Image
+    needs: [build-operaton-bpm, build-keycloak-plugin]
+    runs-on: ubuntu-latest
+    outputs:
+      cache-docker-image-hit: ${{ steps.cache-docker-image.outputs.cache-hit }}
+    #strategy:
+    #  fail-fast: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Checkout original source
+        run: curl -L https://github.com/operaton/operaton-docker/archive/refs/heads/main.tar.gz | tar -xz --strip-components=1
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Expose GitHub Runtime
+        uses: actions/github-script@v7
+        with:
+          script: |
+            Object.keys(process.env).forEach(function (key) {
+              if (key.startsWith('ACTIONS_')) {
+                core.info(`${key}=${process.env[key]}`);
+                core.exportVariable(key, process.env[key]);
+              }
+            });
+      - name: Download artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: operaton-bpm
+          path: ./operaton-bpm/
+      - name: Download artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: keycloak-plugin
+          path: ./keycloak-plugin/
+      - name: Cache output
+        id: cache-docker-image
+        uses: actions/cache@v5
+        with:
+          path: operaton-sso.tar
+          key: cache-docker-image-${{ github.sha }}-${{ hashFiles('./operaton-bpm/**', './keycloak-plugin/**') }}
+      - name: Build docker image
+        if: steps.cache-docker-image.outputs.cache-hit != 'true'
+        run: ./release-wrapper.sh
+        env:
+          DISTRO: run
+          PLATFORMS: linux/amd64
+          VERSION: ${{ inputs.operaton-version || '' }}
+          SNAPSHOT: false
+          #SNAPSHOT_TAG_BRANCH: ${{ github.event.release.target_commitish || github.ref_name }}
+          DOCKERHUB: false
+          #DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          #DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+          IMAGE_REPO_OPERATON: operaton-docker
+          #IMAGE_REPO_TOMCAT: ${{ vars.IMAGE_REPO_TOMCAT }}
+          #IMAGE_REPO_WILDFLY: ${{ vars.IMAGE_REPO_WILDFLY }}      
+      - name: Upload Docker Image as Artifact
+        if: steps.cache-docker-image.outputs.cache-hit != 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: docker-image-artifact
+          path: operaton-docker.tar
+          retention-days: 1
+  publish-to-ghcr:
+    name: Publish to Github Container Registry
+    needs: build-docker
+    if: needs.build-docker.outputs.cache-docker-image-hit != 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write # Zwingend erforderlich, um auf ghcr.io zu schreiben
+    steps:
+      - name: Download Docker Image TAR
+        uses: actions/download-artifact@v8
+        with:
+          name: docker-image-artifact
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+      - name: Load Docker Image
+        run: docker load -i operaton-docker.tar
+      - name: Push Image to GHCR
+        run: docker push ghcr.io/${{ github.repository_owner }}/operaton-docker:${{ inputs.operaton-version }}
