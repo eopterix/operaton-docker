@@ -15,13 +15,10 @@ unset -f exit
 PLATFORMS="amd64 -o type=docker,dest=operaton-docker.tar"
 
 # Prepare replacement snippet
-REPLACEMENT=$(eval "cat <<EOF
-$(cat download-snippet.sh  | awk '{printf "%s\\n", $0}' )
-EOF"
-)
+while IFS= read -r line; do eval "echo \"$line \""; done < download-snippet.sh > download-snippet-evaluated.sh
 
 # Replace wget command in download.sh
-sed -i "s|wget -q \"\$distro_file_url\"|$REPLACEMENT|" download.sh
+sed -i -e "/wget -q \"\$distro_file_url\"/{r download-snippet-evaluated.sh" -e "d;}" download.sh
 
 # Call sourced function
 build_and_push "${VERSION}"
