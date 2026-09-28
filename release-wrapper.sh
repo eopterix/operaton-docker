@@ -16,9 +16,9 @@ PLATFORMS="amd64 -o type=docker,dest=operaton-docker.tar"
 
 # Additional COPY command to use artifacts
 NEW_LINE="COPY keycloak-plugin/operaton-keycloak-run-${VERSION_KEYCLOAK}.jar /operaton/configuration/userlib/"
-sed -i '/^COPY /a \\n'"$NEW_LINE"'' Dockerfile
+sed -i '/^COPY /a '"$NEW_LINE"'' Dockerfile
 NEW_LINE="COPY operaton-bpm/operaton-bpm-${VERSION}.tar.gz ."
-sed -i '/^COPY /a \\n'"$NEW_LINE"'' Dockerfile
+sed -i '/^COPY /a '"$NEW_LINE"'' Dockerfile
 
 # Download line to be deleted
 DEL_LINE='wget -q "$distro_file_url"'
