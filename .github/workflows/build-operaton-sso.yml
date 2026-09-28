@@ -24,7 +24,7 @@ jobs:
     name: Build Operaton BPM Maven Package
     runs-on: ubuntu-24.04
     outputs:
-      artifact_id: {{ steps.upload-step.outputs.artifact-id }}
+      artifact_id: ${{ steps.upload-step.outputs.artifact-id }}
     permissions:
       contents: read
       checks: write
@@ -59,7 +59,7 @@ jobs:
     name: Build Keycloak Plugin Maven Package
     runs-on: ubuntu-24.04
     outputs:
-      artifact_id: {{ steps.upload-step.outputs.artifact-id }}
+      artifact_id: ${{ steps.upload-step.outputs.artifact-id }}
     permissions:
       contents: read
       checks: write
