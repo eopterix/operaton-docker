@@ -55,7 +55,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           #name: operaton-bpm
-          path: ~/.m2/repository/org/operaton/bpm/run/operaton-bpm-run/${{ inputs.operaton-version }}/operaton-bpm-run-${{ inputs.operaton-version }}.tar.gz
+          path: ~/.m2/repository/org/operaton/bpm/run/operaton-bpm-run/${{ inputs.operaton-version }}/operaton-bpm-${{ inputs.operaton-version }}.tar.gz
           archive: false
 
   build-keycloak-plugin:
