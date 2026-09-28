@@ -126,12 +126,12 @@ jobs:
               }
             });
       - name: Download artifact
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v7
         with:
           name: operaton-bpm
           path: ./operaton-bpm
       - name: Download artifact
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v7
         with:
           name: keycloak-plugin
           path: ./keycloak-plugin
