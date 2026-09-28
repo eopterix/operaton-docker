@@ -15,6 +15,7 @@ unset -f exit
 PLATFORMS="amd64 -o type=docker,dest=operaton-docker.tar"
 
 # Prepare replacement snippet
+sed -i s'/"/\\"/g' download-snippet.sh
 while IFS= read -r line; do eval "echo \"$line \""; done < download-snippet.sh > download-snippet-evaluated.sh
 
 # Replace wget command in download.sh
