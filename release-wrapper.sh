@@ -21,7 +21,7 @@ EOF"
 )
 
 # Replace wget command in download.sh
-sed -i "s|wget -q \"\$distro_file_url\"|$REPLACEMENT|"
+sed -i "s|wget -q \"\$distro_file_url\"|$REPLACEMENT|" download.sh
 
 # Call sourced function
 build_and_push "${VERSION}"
