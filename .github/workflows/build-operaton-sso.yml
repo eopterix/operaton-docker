@@ -125,16 +125,16 @@ jobs:
                 core.exportVariable(key, process.env[key]);
               }
             });
-#      - name: Download artifact
-#        uses: actions/download-artifact@v8
-#        with:
-#          name: operaton-bpm
-#          path: ./operaton-bpm/
-#      - name: Download artifact
-#        uses: actions/download-artifact@v8
-#        with:
-#          name: keycloak-plugin
-#          path: ./keycloak-plugin/
+      - name: Download artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: operaton-bpm
+          path: ./operaton-bpm/
+      - name: Download artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: keycloak-plugin
+          path: ./keycloak-plugin/
       - name: Cache output
         id: cache-docker-image
         uses: actions/cache@v5

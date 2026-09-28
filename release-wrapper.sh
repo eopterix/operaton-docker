@@ -14,12 +14,15 @@ unset -f exit
 # Hacky bending or docker xbuild command
 PLATFORMS="amd64 -o type=docker,dest=operaton-docker.tar"
 
-# Prepare replacement snippet
-sed -i s'/"/\\"/g' download-snippet.sh
-while IFS= read -r line; do eval "echo \"$line \""; done < download-snippet.sh > download-snippet-evaluated.sh
+# Additional COPY command to use artifacts
+NEW_LINE="COPY keycloak-plugin/operaton-keycloak-run-${VERSION_KEYCLOAK}.jar /operaton/configuration/userlib/"
+sed -i '/^COPY /a \\n'"$NEW_LINE"'' Dockerfile
+NEW_LINE="COPY operaton-bpm/operaton-bpm-${VERSION}.tar.gz ."
+sed -i '/^COPY /a \\n'"$NEW_LINE"'' Dockerfile
 
-# Replace wget command in download.sh
-sed -i -e "/wget -q \"\$distro_file_url\"/{r download-snippet-evaluated.sh" -e "d;}" download.sh
+# Download line to be deleted
+DEL_LINE='wget -q "$distro_file_url"'
+sed -i "/$DEL_LINE/d" "download.sh"
 
 # Call sourced function
 build_and_push "${VERSION}"
