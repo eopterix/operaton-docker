@@ -15,12 +15,12 @@ unset -f exit
 PLATFORMS="amd64 -o type=docker,dest=operaton-docker.tar"
 
 # Additional COPY command to use artifacts
-NEW_LINE="COPY keycloak-plugin/operaton-keycloak-run-${VERSION_KEYCLOAK}.jar /operaton/configuration/userlib/"
+NEW_LINE="COPY operaton-keycloak-run-${VERSION_KEYCLOAK}.jar /operaton/configuration/userlib/"
 sed -i "0,/^COPY/{/^COPY/a\
 ${NEW_LINE}
 }" Dockerfile
 
-NEW_LINE="COPY operaton-bpm/operaton-bpm-run-${VERSION}.tar.gz ."
+NEW_LINE="COPY operaton-bpm-run-${VERSION}.tar.gz operaton-bpm-${VERSION}.tar.gz"
 sed -i "0,/^COPY/{/^COPY/a\
 ${NEW_LINE}
 }" Dockerfile
