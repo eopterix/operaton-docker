@@ -14,9 +14,22 @@ unset -f exit
 # Hacky bending or docker xbuild command
 PLATFORMS="amd64 -o type=docker,dest=operaton-docker.tar"
 
-# Now override wget to get our local artifact
+# Now point wget in download.sh to local artifacts
 function wget() {
-  command wget "${WGET_ARGS}"
+  WGET_ARGS=(
+     --header="Authorization: Bearer ${GITHUB_TOKEN}"
+     -O "operaton-bpm-${VERSION}.tar.gz"
+     "https://github.com${GITHUB_REPO}/actions/artifacts/${ARTIFACT_ID_OPERATON}/zip"
+  )
+  command wget "${WGET_ARGS[@]}"
+
+  mkdir -p /operaton/configuration/userlib/
+  WGET_ARGS=(
+     --header="Authorization: Bearer ${GITHUB_TOKEN}"
+     -O "/operaton/configuration/userlib/keycloak-plugin-${VERSION_KEYCLOAK}.tar.gz"
+     "https://github.com${GITHUB_REPO}/actions/artifacts/${ARTIFACT_ID_KEYCLOAK}/zip"
+  )
+  command wget "${WGET_ARGS[@]}"
 }
 
 # Call sourced function

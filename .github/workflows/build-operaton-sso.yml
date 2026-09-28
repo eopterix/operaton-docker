@@ -24,7 +24,7 @@ jobs:
     name: Build Operaton BPM Maven Package
     runs-on: ubuntu-24.04
     outputs:
-      wget_args: ${{ steps.build-args.outputs.WGET_ARGS }}
+      artifact_id: {{ steps.upload-step.outputs.artifact-id }}
     permissions:
       contents: read
       checks: write
@@ -48,22 +48,18 @@ jobs:
         run: |
           ./mvnw -pl distro/run/distro/ -am -DskipTests install
       - name: Upload single file artifact
+        id: upload-step
         uses: actions/upload-artifact@v7
         with:
           name: operaton-bpm
           path: ~/.m2/repository/org/operaton/bpm/run/operaton-bpm-run/${{ inputs.operaton-version }}/operaton-bpm-run-${{ inputs.operaton-version }}.tar.gz
           archive: false
-      - name: Build artifacts wget arguments
-        id: build-args
-        run: |
-          ARTIFACT_ID="${{ steps.upload-step.outputs.artifact-id }}"
-          echo "WGET_ARGS<<EOF" >> $GITHUB_OUTPUT
-          echo "--header=\"Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}\" -O ${{ inputs.operaton-version }}.tar.gz \"https://api.github.com/repos/${{ github.repository }}/actions/artifacts/${ARTIFACT_ID}/zip\"" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
 
   build-keycloak-plugin:
     name: Build Keycloak Plugin Maven Package
     runs-on: ubuntu-24.04
+    outputs:
+      artifact_id: {{ steps.upload-step.outputs.artifact-id }}
     permissions:
       contents: read
       checks: write
@@ -90,10 +86,12 @@ jobs:
         run: |
           ./mvnw -pl extension-run -DskipTests clean install -am
       - name: Upload artifacts
+        id: upload-step
         uses: actions/upload-artifact@v7
         with:
           name: keycloak-plugin
-          path: ~/.m2/repository/org/operaton/bpm/extension/operaton-keycloak-run/${{ inputs.plugin-version }}/
+          path: ~/.m2/repository/org/operaton/bpm/extension/operaton-keycloak-run/${{ inputs.plugin-version }}/operaton-keycloak-run-${{ inputs.plugin-version }}.jar
+          archive: false
 
   build-docker:
     name: Build Docker Image
@@ -129,17 +127,17 @@ jobs:
 #        with:
 #          name: operaton-bpm
 #          path: ./operaton-bpm/
-      - name: Download artifact
-        uses: actions/download-artifact@v8
-        with:
-          name: keycloak-plugin
-          path: ./keycloak-plugin/
+#      - name: Download artifact
+#        uses: actions/download-artifact@v8
+#        with:
+#          name: keycloak-plugin
+#          path: ./keycloak-plugin/
       - name: Cache output
         id: cache-docker-image
         uses: actions/cache@v5
         with:
           path: operaton-docker.tar
-          key: cache-docker-image-${{ github.sha }}-${{ hashFiles('./operaton-bpm/**', './keycloak-plugin/**') }}
+          key: cache-docker-image-${{ github.sha }}-${{ needs.build-operaton-bpm.outputs.artifact_id }}-${{ needs.build-keycloak-plugin.outputs.artifact_id }}
       - name: Build docker image
         if: steps.cache-docker-image.outputs.cache-hit != 'true'
         run: ./release-wrapper.sh
@@ -149,7 +147,11 @@ jobs:
           VERSION: ${{ inputs.operaton-version || '' }}
           SNAPSHOT: false
           IMAGE_REPO_OPERATON: operaton-docker
-          WGET_ARGS: ${{ needs.build-operaton-bpm.outputs.wget_args }}
+          ARTIFACT_ID_OPERATON: ${{ needs.build-operaton-bpm.outputs.artifact_id }}
+          ARTIFACT_ID_KEYCLOAK: ${{ needs.build-keycloak-plugin.outputs.artifact_id }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GUTHUB_REPO: ${{ github.repository }}
+          VERSION_KEYCLOAK: ${{ inputs.plugin-version || '' }}
       - name: Upload Docker Image as Artifact
         if: steps.cache-docker-image.outputs.cache-hit != 'true'
         uses: actions/upload-artifact@v7
