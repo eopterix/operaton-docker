@@ -55,7 +55,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           #name: operaton-bpm
-          path: ~/.m2/repository/org/operaton/bpm/run/operaton-bpm-run/${{ inputs.operaton-version }}/operaton-bpm-${{ inputs.operaton-version }}.tar.gz
+          path: ~/.m2/repository/org/operaton/bpm/run/operaton-bpm-run/${{ inputs.operaton-version }}/operaton-bpm-run-${{ inputs.operaton-version }}.tar.gz
           archive: false
 
   build-keycloak-plugin:
@@ -128,13 +128,15 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v8
         with:
-          name: operaton-bpm-${{ inputs.operaton-version }}.tar.gz
+          name: operaton-bpm-run-${{ inputs.operaton-version }}.tar.gz
           path: ./operaton-bpm
       - name: Download artifact
         uses: actions/download-artifact@v8
         with:
           name: operaton-keycloak-run-${{ inputs.plugin-version }}.jar
           path: ./keycloak-plugin
+      - name: Rename file
+        run: mv ./keycloak-plugin/operaton-keycloak-run-${{ inputs.plugin-version }}.jar ./keycloak-plugin/operaton-keycloak-${{ inputs.plugin-version }}.jar
       - name: Cache output
         id: cache-docker-image
         uses: actions/cache@v5
