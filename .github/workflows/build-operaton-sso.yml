@@ -153,7 +153,7 @@ jobs:
           ARTIFACT_ID_OPERATON: ${{ needs.build-operaton-bpm.outputs.artifact_id }}
           ARTIFACT_ID_KEYCLOAK: ${{ needs.build-keycloak-plugin.outputs.artifact_id }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GUTHUB_REPO: ${{ github.repository }}
+          GITHUB_REPO: ${{ github.repository }}
           VERSION_KEYCLOAK: ${{ inputs.plugin-version || '' }}
       - name: Upload Docker Image as Artifact
         if: steps.cache-docker-image.outputs.cache-hit != 'true'
