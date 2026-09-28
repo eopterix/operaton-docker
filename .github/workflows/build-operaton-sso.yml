@@ -157,7 +157,7 @@ jobs:
           VERSION_KEYCLOAK: ${{ inputs.plugin-version || '' }}
       - name: Upload Docker Image as Artifact
         if: steps.cache-docker-image.outputs.cache-hit != 'true'
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: docker-image-artifact
           path: operaton-docker.tar
@@ -172,7 +172,7 @@ jobs:
       packages: write # Zwingend erforderlich, um auf ghcr.io zu schreiben
     steps:
       - name: Download Docker Image TAR
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v4
         with:
           name: docker-image-artifact
       - name: Log in to GitHub Container Registry
