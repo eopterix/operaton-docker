@@ -139,7 +139,7 @@ jobs:
         #/keycloak-plugin
       - name: Rename file
         #run: mv ./keycloak-plugin/
-        run: mv operaton-keycloak-run-${{ inputs.plugin-version }}.jar ./keycloak-plugin/operaton-keycloak-${{ inputs.plugin-version }}.jar
+        run: mv operaton-keycloak-run-${{ inputs.plugin-version }}.jar operaton-keycloak-${{ inputs.plugin-version }}.jar
       - name: Cache output
         id: cache-docker-image
         uses: actions/cache@v5
