@@ -52,9 +52,9 @@ jobs:
           ./mvnw -pl distro/run/distro/ -am -DskipTests install
       - name: Upload single file artifact
         id: upload-step
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
-          name: operaton-bpm
+          #name: operaton-bpm
           path: ~/.m2/repository/org/operaton/bpm/run/operaton-bpm-run/${{ inputs.operaton-version }}/operaton-bpm-run-${{ inputs.operaton-version }}.tar.gz
           archive: false
 
@@ -90,9 +90,9 @@ jobs:
           ./mvnw -pl extension-run -DskipTests clean install -am
       - name: Upload artifacts
         id: upload-step
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
-          name: keycloak-plugin
+          #name: keycloak-plugin
           path: ~/.m2/repository/org/operaton/bpm/extension/operaton-keycloak-run/${{ inputs.plugin-version }}/operaton-keycloak-run-${{ inputs.plugin-version }}.jar
           archive: false
 
@@ -128,12 +128,12 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: operaton-bpm
+          name: operaton-bpm-run-${{ inputs.operaton-version }}.tar.gz
           path: ./operaton-bpm
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: keycloak-plugin
+          name: operaton-keycloak-run-${{ inputs.plugin-version }}.jar
           path: ./keycloak-plugin
       - name: Cache output
         id: cache-docker-image
