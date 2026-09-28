@@ -128,7 +128,7 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v8
         with:
-          name: operaton-bpm-run-${{ inputs.operaton-version }}.tar.gz
+          name: operaton-bpm-${{ inputs.operaton-version }}.tar.gz
           path: ./operaton-bpm
       - name: Download artifact
         uses: actions/download-artifact@v8
