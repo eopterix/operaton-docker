@@ -22,6 +22,7 @@ function wget() {
      "https://github.com${GITHUB_REPO}/actions/artifacts/${ARTIFACT_ID_OPERATON}/zip"
   )
   command wget "${WGET_ARGS[@]}"
+  echo "Pulled operaton-bpm."
 
   mkdir -p /operaton/configuration/userlib/
   WGET_ARGS=(
@@ -30,6 +31,7 @@ function wget() {
      "https://github.com${GITHUB_REPO}/actions/artifacts/${ARTIFACT_ID_KEYCLOAK}/zip"
   )
   command wget "${WGET_ARGS[@]}"
+  echo "Pulled keycloak-plugin."
 }
 
 # Call sourced function
