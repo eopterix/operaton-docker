@@ -23,6 +23,8 @@ jobs:
   build-operaton-bpm:
     name: Build Operaton BPM Maven Package
     runs-on: ubuntu-24.04
+    outputs:
+      wget_args: ${{ steps.build-args.outputs.WGET_ARGS }}
     permissions:
       contents: read
       checks: write
@@ -45,11 +47,20 @@ jobs:
           MAVEN_OPTS: "-Xmx4g -XX:MaxMetaspaceSize=1g"
         run: |
           ./mvnw -pl distro/run/distro/ -am -DskipTests install
-      - name: Upload artifacts
+      - name: Upload single file artifact
         uses: actions/upload-artifact@v7
         with:
           name: operaton-bpm
-          path: ~/.m2/repository/org/operaton/bpm/run/operaton-bpm-run/${{ inputs.operaton-version }}/
+          path: ~/.m2/repository/org/operaton/bpm/run/operaton-bpm-run/${{ inputs.operaton-version }}/operaton-bpm-run-${{ inputs.operaton-version }}.tar.gz
+          archive: false
+      - name: Build artifacts wget arguments
+        id: build-args
+        run: |
+          ARTIFACT_ID="${{ steps.upload-step.outputs.artifact-id }}"
+          echo "WGET_ARGS<<EOF" >> $GITHUB_OUTPUT
+          echo "--header=\"Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}\" -O ${{ inputs.operaton-version }}.tar.gz \"https://api.github.com/repos/${{ github.repository }}/actions/artifacts/${ARTIFACT_ID}/zip\"" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
   build-keycloak-plugin:
     name: Build Keycloak Plugin Maven Package
     runs-on: ubuntu-24.04
@@ -83,6 +94,7 @@ jobs:
         with:
           name: keycloak-plugin
           path: ~/.m2/repository/org/operaton/bpm/extension/operaton-keycloak-run/${{ inputs.plugin-version }}/
+
   build-docker:
     name: Build Docker Image
     needs: [build-operaton-bpm, build-keycloak-plugin]
@@ -112,11 +124,11 @@ jobs:
                 core.exportVariable(key, process.env[key]);
               }
             });
-      - name: Download artifact
-        uses: actions/download-artifact@v8
-        with:
-          name: operaton-bpm
-          path: ./operaton-bpm/
+#      - name: Download artifact
+#        uses: actions/download-artifact@v8
+#        with:
+#          name: operaton-bpm
+#          path: ./operaton-bpm/
       - name: Download artifact
         uses: actions/download-artifact@v8
         with:
@@ -136,13 +148,8 @@ jobs:
           PLATFORMS: linux/amd64
           VERSION: ${{ inputs.operaton-version || '' }}
           SNAPSHOT: false
-          #SNAPSHOT_TAG_BRANCH: ${{ github.event.release.target_commitish || github.ref_name }}
-          DOCKERHUB: false
-          #DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          #DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
           IMAGE_REPO_OPERATON: operaton-docker
-          #IMAGE_REPO_TOMCAT: ${{ vars.IMAGE_REPO_TOMCAT }}
-          #IMAGE_REPO_WILDFLY: ${{ vars.IMAGE_REPO_WILDFLY }}      
+          WGET_ARGS: ${{ needs.build-operaton-bpm.outputs.wget_args }}
       - name: Upload Docker Image as Artifact
         if: steps.cache-docker-image.outputs.cache-hit != 'true'
         uses: actions/upload-artifact@v7

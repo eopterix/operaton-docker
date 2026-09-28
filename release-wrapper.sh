@@ -14,5 +14,13 @@ unset -f exit
 # Hacky bending or docker xbuild command
 PLATFORMS="amd64 -o type=docker,dest=operaton-docker.tar"
 
+# Now override wget to get our local artifact
+function wget() {
+  command wget "${WGET_ARGS}"
+}
+
 # Call sourced function
 build_and_push "${VERSION}"
+
+# Release wget
+unset -f wget
