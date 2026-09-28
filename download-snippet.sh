@@ -1,3 +1,3 @@
-command wget --header="Authorization: Bearer ${GITHUB_TOKEN}" -O "operaton-bpm-${VERSION}.tar.gz" "https://github.com/${GITHUB_REPO}/actions/runs/${GITHUB_RUN_ID}/artifacts/${ARTIFACT_ID_OPERATON}"
-mkdir -p /operaton/configuration/userlib/
-command wget --header="Authorization: Bearer ${GITHUB_TOKEN}" -O "/operaton/configuration/userlib/operaton-keycloak-run-${VERSION_KEYCLOAK}.jar" "https://github.com/${GITHUB_REPO}/actions/runs/${GITHUB_RUN_ID}/artifacts/${ARTIFACT_ID_KEYCLOAK}"
+command wget --header="Authorization: Bearer ${GITHUB_TOKEN}" -O "operaton-bpm-${VERSION}.tar.gz" "https://api.github.com/repos/${GITHUB_REPO}/actions/runs/${GITHUB_RUN_ID}/artifacts/${ARTIFACT_ID_OPERATON}/files"
+mkdir -p /operaton/configuration/userlib
+command wget --header="Authorization: Bearer ${GITHUB_TOKEN}" -O "/operaton/configuration/userlib/operaton-keycloak-run-${VERSION_KEYCLOAK}.jar" "https://api.github.com/repos/${GITHUB_REPO}/actions/runs/${GITHUB_RUN_ID}/artifacts/${ARTIFACT_ID_KEYCLOAK}/files"
