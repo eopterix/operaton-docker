@@ -129,14 +129,17 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: operaton-bpm-run-${{ inputs.operaton-version }}.tar.gz
-          path: ./operaton-bpm
+          path: .
+        #/operaton-bpm
       - name: Download artifact
         uses: actions/download-artifact@v8
         with:
           name: operaton-keycloak-run-${{ inputs.plugin-version }}.jar
-          path: ./keycloak-plugin
+          path: .
+        #/keycloak-plugin
       - name: Rename file
-        run: mv ./keycloak-plugin/operaton-keycloak-run-${{ inputs.plugin-version }}.jar ./keycloak-plugin/operaton-keycloak-${{ inputs.plugin-version }}.jar
+        #run: mv ./keycloak-plugin/
+        run: operaton-keycloak-run-${{ inputs.plugin-version }}.jar ./keycloak-plugin/operaton-keycloak-${{ inputs.plugin-version }}.jar
       - name: Cache output
         id: cache-docker-image
         uses: actions/cache@v5
