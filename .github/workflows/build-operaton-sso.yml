@@ -37,10 +37,7 @@ jobs:
           curl -L https://github.com/operaton/operaton/archive/refs/tags/v${{ inputs.operaton-version }}.tar.gz | tar -xz --strip-components=1
       - name: Swap banner
         run: |
-          echo "================================================================" >> distro/run/core/src/main/resources/banner.txt
-          echo "================================================================" >> distro/run/core/src/main/resources/banner.txt
-          echo "=============================DLR================================" >> distro/run/core/src/main/resources/banner.txt
-          echo "================================================================" >> distro/run/core/src/main/resources/banner.txt
+          cat banner.txt >> distro/run/core/src/main/resources/banner.txt
       - name: Cache output
         id: cache-operaton-bpm
         uses: actions/cache@v5
