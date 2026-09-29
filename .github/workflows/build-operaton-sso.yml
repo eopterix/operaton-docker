@@ -1,5 +1,5 @@
-name: Build Registration Harvester BPM with SSO
-description: Builds a custom Operaton-BPM distribution with SSO support enabled, for use in downstream Docker image builds.
+name: Build Operaton BPM with Keycloak SSO
+description: Builds a custom Operaton-BPM Docker image with SSO support via Keycloak. Uses existing official repositories with minimal adjustments.
 
 on:
   workflow_dispatch:
@@ -16,7 +16,6 @@ on:
         default: '2.1.0'
         options:
           - 2.1.0
-          - 2.2.0-SNAPSHOT
         required: true
 
 jobs:
@@ -37,7 +36,8 @@ jobs:
           curl -L https://github.com/operaton/operaton/archive/refs/tags/v${{ inputs.operaton-version }}.tar.gz | tar -xz --strip-components=1
       - name: Swap banner
         run: |
-          cat banner.txt >> distro/run/core/src/main/resources/banner.txt
+          paste -d '' banner.txt distro/run/core/src/main/resources/banner.txt > distro/run/core/src/main/resources/banner.txt
+          paste -d '' banner.txt spring-boot-starter/starter/src/main/resources/banner.txt > spring-boot-starter/starter/src/main/resources/banner.txt
       - name: Cache output
         id: cache-operaton-bpm
         uses: actions/cache@v5
@@ -54,7 +54,6 @@ jobs:
         id: upload-step
         uses: actions/upload-artifact@v7
         with:
-          #name: operaton-bpm
           path: ~/.m2/repository/org/operaton/bpm/run/operaton-bpm-run/${{ inputs.operaton-version }}/operaton-bpm-run-${{ inputs.operaton-version }}.tar.gz
           archive: false
 
@@ -92,7 +91,6 @@ jobs:
         id: upload-step
         uses: actions/upload-artifact@v7
         with:
-          #name: keycloak-plugin
           path: ~/.m2/repository/org/operaton/bpm/extension/operaton-keycloak-run/${{ inputs.plugin-version }}/operaton-keycloak-run-${{ inputs.plugin-version }}.jar
           archive: false
 
@@ -102,8 +100,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       cache-docker-image-hit: ${{ steps.cache-docker-image.outputs.cache-hit }}
-    #strategy:
-    #  fail-fast: false
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -130,16 +126,11 @@ jobs:
         with:
           name: operaton-bpm-run-${{ inputs.operaton-version }}.tar.gz
           path: .
-        #/operaton-bpm
       - name: Download artifact
         uses: actions/download-artifact@v8
         with:
           name: operaton-keycloak-run-${{ inputs.plugin-version }}.jar
           path: .
-        #/keycloak-plugin
-      #- name: Rename file
-      #  #run: mv ./keycloak-plugin/
-      #  run: mv operaton-keycloak-run-${{ inputs.plugin-version }}.jar operaton-keycloak-${{ inputs.plugin-version }}.jar
       - name: Cache output
         id: cache-docker-image
         uses: actions/cache@v5
@@ -167,6 +158,7 @@ jobs:
           name: docker-image-artifact
           path: operaton-docker.tar
           retention-days: 1
+
   publish-to-ghcr:
     name: Publish to Github Container Registry
     needs: build-docker

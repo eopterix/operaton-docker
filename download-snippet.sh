@@ -1,3 +1,0 @@
-command wget --header="Accept: application/vnd.github+json" --header="Authorization: Bearer ${GITHUB_TOKEN}" --header "X-GitHub-Api-Version: 2026-03-10" -O "operaton-bpm-${VERSION}.tar.gz" "https://api.github.com/repos/${GITHUB_REPO}/actions/artifacts/${ARTIFACT_ID_OPERATON}/zip"
-mkdir -p /operaton/configuration/userlib
-command wget --header="Accept: application/vnd.github+json" --header="Authorization: Bearer ${GITHUB_TOKEN}" --header "X-GitHub-Api-Version: 2026-03-10" -O "/operaton/configuration/userlib/operaton-keycloak-run-${VERSION_KEYCLOAK}.jar" "https://api.github.com/repos/${GITHUB_REPO}/actions/artifacts/${ARTIFACT_ID_KEYCLOAK}/zip"
