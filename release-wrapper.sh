@@ -15,6 +15,9 @@ ${NEW_LINE}
 DEL_LINE='wget -q "$distro_file_url"'
 sed -i "/$DEL_LINE/d" "download.sh"
 
+# Delete Docker cache arguments
+sed "/^    --cache/d" "Dockerfile"
+
 # Conveniently this will break execution of release.sh just right
 function docker() { return 0; }
 function exit() { return ${1:-0}; }
